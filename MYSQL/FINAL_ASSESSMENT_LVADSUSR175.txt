@@ -1,0 +1,56 @@
+LAB 1 
+1.) SELECT product_category,AVG(sales_amount) FROM sales_records JOIN products USING(product_id) WHERE sales_date <= DATE_SUB(CURRENT_DATE,INTERVAL 1 MONTH) GROUP BY product_category;
+
+2.) WITH CTE2 AS (SELECT product_id,SUM(sales_amount)AS Total_sales FROM sales_records WHERE YEAR(sales_date) = YEAR(current_date())GROUP BY product_id)
+SELECT *,RANK() OVER(ORDER BY Total_sales DESC) as Rnk FROM CTE2 LIMIT 3;
+
+3.) WITH CTE AS (SELECT customer_id,SUM(sales_amount) AS SALES, SUM(sales_amount)/(SELECT SUM(sales_amount) FROM sales_records)* 100 AS Percentage FROM sales_records GROUP BY customer_id)
+SELECT *,RANK() OVER(ORDER BY Percentage DESC) FROM CTE;
+
+4.) SELECT customer_id, CASE WHEN MONTH(sales_date) IN (12,11,1,2,3,4) THEN "Consistent Buyers" ELSE "Occasional Buyers" END AS Classify FROM sales_records;
+
+
+
+
+
+LAB 2 
+5.) SELECT departure_airport,arrival_airport ,AVG(ticket_price) FROM flights JOIN tickets USING(flight_id) GROUP BY departure_airport,arrival_airport
+
+6.) SELECT flight_number,departure_date,COUNT(ticket_id) AS Total_Tickest_Sold FROM flights JOIN tickets USING(flight_id) WHERE DATEDIFF(MONTH(CURRENT_DATE()),MONTH(ticket_date)) = 1 GROUP BY flight_number,departure_date ORDER BY Total_Tickest_Sold DESC;
+
+7.) SELECT passenger_name,SUM(ticket_price) AS TOTAL_SPENT ,frequent_flyer_status FROM passengers JOIN tickets USING(passenger_id) GROUP BY passenger_name,frequent_flyer_status ORDER BY TOTAL_SPENT DESC LIMIT 5;
+
+8.) SELECT MONTH(ticket_date) AS MONTH , COUNT(ticket_id) AS TICKETS_SOLD FROM tickets GROUP BY MONTH(ticket_date) ORDER BY TICKETS_SOLD DESC LIMIT 1;
+
+
+LAB 3 
+
+9.) SELECT game_genre,avg((registration_date-play_date))*24*16  as Play_Time FROM playerscores JOIN games USING(game_id) JOIN players USING(player_id) GROUP BY game_genre ORDER BY Play_Time DESC;
+
+10.) SELECT game_id,game_name,COUNT(DISTINCT(player_id)) AS NO_OF_PLAYERS FROM playerscores  JOIN games USING(game_id) GROUP BY game_id,game_name ORDER BY NO_OF_PLAYERS DESC LIMIT 3;
+
+11.) SELECT game_id,game_name, AVG(score) AS AVG_SCORE,MAX(score) AS MAX_SCORE , COUNT(DISTINCT(player_id)) AS NO_OF_PLAYERS FROM playerscores  JOIN games USING(game_id) GROUP BY game_id,game_name;
+
+12.)  SELECT player_id, registration_date, MAX(play_date) FROM playerscores JOIN players USING (player_id) GROUP BY player_id, registration_date HAVING DATEDIFF(CURRENT_DATE,MAX(play_date))  = 30;
+
+LAB 4 
+
+13.) SELECT doctor_id,doctor_name,SUM(cost) AS TOTAL_COST  FROM treatments JOIN doctors USING(doctor_id) GROUP BY doctor_id,doctor_name ORDER BY TOTAL_COST DESC LIMIT 5;
+
+14.) SELECT treatment_name,SUM(cost) AS T_COST , SUM(cost)/ (SELECT SUM(COST) FROM treatments) * 100 AS PERCENTAGE FROM treatments GROUP BY treatment_name;
+
+15.) SELECT patient_id,patient_name,admission_date,discharge_date FROM patients WHERE admission_date <= date_ADD(discharge_date,INTERVAL 30 DAY ) ORDER BY admission_date ASC;
+
+16.) SELECT gender,diagnosis, ROUND(AVG(DATE(discharge_date)-DATE(admission_date)),0) FROM patients GROUP BY gender,diagnosis;
+
+
+LAB 5 
+
+17.) SELECT department,semester,ROUND(AVG(grade),0) FROM enrollments JOIN courses USING(course_id) GROUP BY  department,semester ORDER BY  department,semester;
+
+18.)SELECT major,enrollment_year,COUNT(student_id) AS T_S FROM students GROUP BY major,enrollment_year ORDER BY T_S DESC LIMIT 5;
+
+19.)SELECT student_id,student_name,semester,SUM(credits) AS CREDITS FROM enrollments JOIN students USING(student_id) JOIN courses USING (course_id) GROUP BY student_id,student_name,semester HAVING SUM(credits) >= 50;
+
+20.)WITH CTE AS (SELECT course_name,enrollment_year,COUNT(enrollment_id) AS NO_of_enrolled , RANK() OVER (PARTITION BY enrollment_year ORDER BY COUNT(enrollment_id) DESC) AS ENROLLED_RANK FROM enrollments JOIN students USING(student_id) JOIN courses USING (course_id) GROUP BY course_name,enrollment_year)
+SELECT course_name,enrollment_year,NO_of_enrolled  FROM CTE WHERE ENROLLED_RANK IN (1,2,3) ;
